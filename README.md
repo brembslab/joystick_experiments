@@ -5,7 +5,7 @@ Under ./TriplePlattform.ino/ you can find the software for the Arduino
 
 Under ./bin/Release/ you can find the current GUI of the project
 
-The documentation of this project can be found under https://youtu.be/kNqgovzYjaw 
+The documentation of this project can be found under https://youtu.be/zFMI1lQ3naE 
 
 Changelog 2.0.0.0
 
