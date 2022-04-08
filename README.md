@@ -3,7 +3,7 @@ Software to run behavioral joystick experiments with Drosophiola and collect tim
 
 Under ./TriplePlattform.ino/ you can find the software for the Arduino
 
-Under ./bin/Release/ you can find the current GUI of the project
+Under ./Release/ you can find the setup file for the current GUI of the project
 
 The documentation of this project can be found under https://youtu.be/zFMI1lQ3naE 
 
