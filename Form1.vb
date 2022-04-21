@@ -47,6 +47,9 @@ Public Class Form1
     Const platform3_led1 = 4
     Const platform3_led2 = 5
 
+    'definition of interval
+    Const timerInterval = 48
+
     Dim tab_ As Char = Chr(9)
 
     Dim white_brush As New SolidBrush(Color.White)
@@ -76,6 +79,11 @@ Public Class Form1
     Dim reserved1 As Integer
     Dim reserved2 As Integer
 
+    Dim start As Date
+    Dim oldTime As Long
+    Dim diffTime As Long
+    Dim diffTimerWritten As Boolean = False
+
     '{----------------------------------------------------}
     'Protected Overrides Sub WndProc(ByRef m As Message)
     '    MyBase.WndProc(m)
@@ -96,10 +104,10 @@ Public Class Form1
 
         Try
             If (queryCollection.Count > 0) Then
-                Console.WriteLine("Device found")
+                'Console.WriteLine("Device found")
 
             Else
-                Console.WriteLine("No Device")
+                'Console.WriteLine("No Device")
                 Throw New System.Exception("No Labjack found")
             End If
         Catch ex As Exception
@@ -191,7 +199,11 @@ Public Class Form1
         Block_No = 0
         performed_NofData = 0
 
-        SamplFreq = 33.333         ' 100Hz
+        'SamplFreq = 33.333         ' 100Hz
+
+        '******************************* set the sample frequency here & -> change timer1.Interval
+
+        SamplFreq = 20
         NofData = TotalTime * SamplFreq     ' (= 21.600 for 9 x 120s)
         ReDim pos_data(NofData, 3)   ' allocate NofData x 4 elements
         endOfBlock = n_t(0)
@@ -484,7 +496,8 @@ Public Class Form1
         CurrentApp = Process.GetCurrentProcess
         CurrentApp.PriorityClass = ProcessPriorityClass.High
 
-        Timer1.Interval = 30
+        'The program need about 10ms to execute 
+        Timer1.Interval = timerInterval
         'Timer1.Enabled = True
         Timer1.Start()
         Me.StopWatch.Start()
@@ -542,8 +555,9 @@ Public Class Form1
     Private Sub timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
         Dim elapsed As TimeSpan = Me.StopWatch.Elapsed
 
+        oldTime = start.Now.Ticks
+
         Call Get_PositionValues()
-        'Call Get_HeaterValues() #JS Stromüberwachung Laser
         Call LaserManagement(pos1, pos2, pos3)
         Call Next_Block()
         n = n + 1
@@ -558,6 +572,26 @@ Public Class Form1
             pos_data(n, 0) = RunningTime
         End If
 
+        '******************** dirty timing trick *******************************
+        Try
+            diffTime = timerInterval - ((start.Now.Ticks - oldTime) \ 10000)
+
+            If (diffTime < 35) And (diffTimerWritten = False) Then
+                Timer1.Interval = diffTime
+                diffTimerWritten = True
+                Console.WriteLine("Timer under: " & Timer1.Interval)
+            Else
+            End If
+
+            If (diffTime > 35) And (diffTimerWritten = True) Then
+                Timer1.Interval = timerInterval
+                diffTimerWritten = False
+                Console.WriteLine("Timer over: " & Timer1.Interval)
+            End If
+
+        Catch
+            Timer1.Interval = 25
+        End Try
     End Sub
 
     '{----------------------------------------------------}
@@ -725,7 +759,7 @@ Public Class Form1
                     platform1_led2_onoff = False
                 Else
                 End If
-                If int_pos1 <= -hysteresis And ledColorRed = True Then
+                If int_pos1 < -hysteresis And ledColorRed = True Then
                     platform1_led1_onoff = False
                     platform1_led2_onoff = False
                 Else
@@ -735,7 +769,7 @@ Public Class Form1
                     platform1_led2_onoff = True
                 Else
                 End If
-                If int_pos1 <= -hysteresis And ledColorRed = False Then
+                If int_pos1 < -hysteresis And ledColorRed = False Then
                     platform1_led1_onoff = False
                     platform1_led2_onoff = False
                 Else
@@ -746,7 +780,7 @@ Public Class Form1
                     platform1_led2_onoff = False
                 Else
                 End If
-                If int_pos1 <= -hysteresis And ledColorRed = True Then
+                If int_pos1 < -hysteresis And ledColorRed = True Then
                     platform1_led1_onoff = True
                     platform1_led2_onoff = False
                 Else
@@ -756,7 +790,7 @@ Public Class Form1
                     platform1_led2_onoff = False
                 Else
                 End If
-                If int_pos1 <= -hysteresis And ledColorRed = False Then
+                If int_pos1 < -hysteresis And ledColorRed = False Then
                     platform1_led1_onoff = False
                     platform1_led2_onoff = True
                 Else
@@ -770,7 +804,7 @@ Public Class Form1
                     platform2_led2_onoff = False
                 Else
                 End If
-                If int_pos2 <= -hysteresis And ledColorRed = True Then
+                If int_pos2 < -hysteresis And ledColorRed = True Then
                     platform2_led1_onoff = False
                     platform2_led2_onoff = False
                 Else
@@ -780,7 +814,7 @@ Public Class Form1
                     platform2_led2_onoff = True
                 Else
                 End If
-                If int_pos2 <= -hysteresis And ledColorRed = False Then
+                If int_pos2 < -hysteresis And ledColorRed = False Then
                     platform2_led1_onoff = False
                     platform2_led2_onoff = False
                 Else
@@ -791,7 +825,7 @@ Public Class Form1
                     platform2_led2_onoff = False
                 Else
                 End If
-                If int_pos2 <= -hysteresis And ledColorRed = True Then
+                If int_pos2 < -hysteresis And ledColorRed = True Then
                     platform2_led1_onoff = True
                     platform2_led2_onoff = False
                 Else
@@ -801,7 +835,7 @@ Public Class Form1
                     platform2_led2_onoff = False
                 Else
                 End If
-                If int_pos2 <= -hysteresis And ledColorRed = False Then
+                If int_pos2 < -hysteresis And ledColorRed = False Then
                     platform2_led1_onoff = False
                     platform2_led2_onoff = True
                 Else
@@ -815,7 +849,7 @@ Public Class Form1
                     platform3_led2_onoff = False
                 Else
                 End If
-                If int_pos3 <= -hysteresis And ledColorRed = True Then
+                If int_pos3 < -hysteresis And ledColorRed = True Then
                     platform3_led1_onoff = False
                     platform3_led2_onoff = False
                 Else
@@ -825,7 +859,7 @@ Public Class Form1
                     platform3_led2_onoff = True
                 Else
                 End If
-                If int_pos3 <= -hysteresis And ledColorRed = False Then
+                If int_pos3 < -hysteresis And ledColorRed = False Then
                     platform3_led1_onoff = False
                     platform3_led2_onoff = False
                 Else
@@ -836,7 +870,7 @@ Public Class Form1
                     platform3_led2_onoff = False
                 Else
                 End If
-                If int_pos3 <= -hysteresis And ledColorRed = True Then
+                If int_pos3 < -hysteresis And ledColorRed = True Then
                     platform3_led1_onoff = True
                     platform3_led2_onoff = False
                 Else
@@ -846,7 +880,7 @@ Public Class Form1
                     platform3_led2_onoff = False
                 Else
                 End If
-                If int_pos3 <= -hysteresis And ledColorRed = False Then
+                If int_pos3 < -hysteresis And ledColorRed = False Then
                     platform3_led1_onoff = False
                     platform3_led2_onoff = True
                 Else
@@ -875,32 +909,77 @@ Public Class Form1
 
         'values for the performance index th and tc
 
-        If platform1_led1_onoff = True Then
+        If platform1_led1_onoff = True And ledColorRed = True Then
             th1 = th1 + 1
         Else
         End If
 
-        If platform1_led2_onoff = True Then
+        If platform1_led1_onoff = False And ledColorRed = True Then
             tc1 = tc1 + 1
         Else
         End If
 
-        If platform2_led1_onoff = True Then
+        'If platform1_led2_onoff = True And ledColorRed = False Then
+        '    tc1 = tc1 + 1
+        'Else
+        'End If
+
+        If platform1_led2_onoff = True And ledColorRed = False Then
+            th1 = th1 + 1
+        Else
+        End If
+
+        If platform1_led2_onoff = False And ledColorRed = False Then
+            tc1 = tc1 + 1
+        Else
+        End If
+
+        'If platform2_led2_onoff = True Then
+        '    tc2 = tc2 + 1
+        'Else
+        'End If
+
+        If platform2_led1_onoff = True And ledColorRed = True Then
             th2 = th2 + 1
         Else
         End If
 
-        If platform2_led2_onoff = True Then
+        If platform2_led1_onoff = False And ledColorRed = True Then
             tc2 = tc2 + 1
         Else
         End If
 
-        If platform3_led1_onoff = True Then
+        If platform2_led2_onoff = True And ledColorRed = False Then
+            th2 = th2 + 1
+        Else
+        End If
+
+        If platform2_led2_onoff = False And ledColorRed = False Then
+            tc2 = tc2 + 1
+        Else
+        End If
+
+        'If platform3_led2_onoff = True Then
+        '    tc3 = tc3 + 1
+        'Else
+        'End If
+
+        If platform3_led1_onoff = True And ledColorRed = True Then
             th3 = th3 + 1
         Else
         End If
 
-        If platform3_led2_onoff = True Then
+        If platform3_led1_onoff = False And ledColorRed = True Then
+            tc3 = tc3 + 1
+        Else
+        End If
+
+        If platform3_led2_onoff = True And ledColorRed = False Then
+            th3 = th3 + 1
+        Else
+        End If
+
+        If platform3_led2_onoff = False And ledColorRed = False Then
             tc3 = tc3 + 1
         Else
         End If
@@ -948,50 +1027,58 @@ Public Class Form1
 
     Sub Next_Block()
         If n = endOfBlock Then
-            PI(0, Block_No) = (tc1 - th1) / (th1 + tc1)
-            PI(1, Block_No) = (tc2 - th2) / (th2 + tc2)
-            PI(2, Block_No) = (tc3 - th3) / (th3 + tc3)
+
+            Try
+                PI(0, Block_No) = (tc1 - th1) / (th1 + tc1)
+                PI(1, Block_No) = (tc2 - th2) / (th2 + tc2)
+                PI(2, Block_No) = (tc3 - th3) / (th3 + tc3)
+            Catch ex As DivideByZeroException
+                Me.emergyCloseTimer()
+                MsgBox("Divison by Zero. The program will stop")
+            End Try
+
+
             Select Case Block_No
                 Case 0
-                    Label1.Text = Str(PI(0, 0))
-                    Label11.Text = Str(PI(1, 0))
-                    Label41.Text = Str(PI(2, 0))
+                    Label1.Text = Str(Math.Round(PI(0, 0), 2))
+                    Label11.Text = Str(Math.Round(PI(1, 0), 2))
+                    Label41.Text = Str(Math.Round(PI(2, 0), 2))
                 Case 1
-                    Label2.Text = Str(PI(0, 1))
-                    Label12.Text = Str(PI(1, 1))
-                    Label42.Text = Str(PI(2, 1))
+                    Label2.Text = Str(Math.Round(PI(0, 1), 2))
+                    Label12.Text = Str(Math.Round(PI(1, 1), 2))
+                    Label42.Text = Str(Math.Round(PI(2, 1), 2))
                 Case 2
-                    Label3.Text = Str(PI(0, 2))
-                    Label13.Text = Str(PI(1, 2))
-                    Label43.Text = Str(PI(2, 2))
+                    Label3.Text = Str(Math.Round(PI(0, 2), 2))
+                    Label13.Text = Str(Math.Round(PI(1, 2), 2))
+                    Label43.Text = Str(Math.Round(PI(2, 2), 2))
                 Case 3
-                    Label4.Text = Str(PI(0, 3))
-                    Label14.Text = Str(PI(1, 3))
-                    Label44.Text = Str(PI(2, 3))
+                    Label4.Text = Str(Math.Round(PI(0, 3), 2))
+                    Label14.Text = Str(Math.Round(PI(1, 3), 2))
+                    Label44.Text = Str(Math.Round(PI(2, 3), 2))
                 Case 4
-                    Label5.Text = Str(PI(0, 4))
-                    Label15.Text = Str(PI(1, 4))
-                    Label45.Text = Str(PI(2, 4))
+                    Label5.Text = Str(Math.Round(PI(0, 4), 2))
+                    Label15.Text = Str(Math.Round(PI(1, 4), 2))
+                    Label45.Text = Str(Math.Round(PI(2, 4), 2))
                 Case 5
-                    Label6.Text = Str(PI(0, 5))
-                    Label16.Text = Str(PI(1, 5))
-                    Label46.Text = Str(PI(2, 5))
+                    Label6.Text = Str(Math.Round(PI(0, 5), 2))
+                    Label16.Text = Str(Math.Round(PI(1, 5), 2))
+                    Label46.Text = Str(Math.Round(PI(2, 5), 2))
                 Case 6
-                    Label7.Text = Str(PI(0, 6))
-                    Label17.Text = Str(PI(1, 6))
-                    Label47.Text = Str(PI(2, 6))
+                    Label7.Text = Str(Math.Round(PI(0, 6), 2))
+                    Label17.Text = Str(Math.Round(PI(1, 6), 2))
+                    Label47.Text = Str(Math.Round(PI(2, 6), 2))
                 Case 7
-                    Label8.Text = Str(PI(0, 7))
-                    Label18.Text = Str(PI(1, 7))
-                    Label48.Text = Str(PI(2, 7))
+                    Label8.Text = Str(Math.Round(PI(0, 7), 2))
+                    Label18.Text = Str(Math.Round(PI(1, 7), 2))
+                    Label48.Text = Str(Math.Round(PI(2, 7), 2))
                 Case 8
-                    Label9.Text = Str(PI(0, 8))
-                    Label19.Text = Str(PI(1, 8))
-                    Label49.Text = Str(PI(2, 8))
+                    Label9.Text = Str(Math.Round(PI(0, 8), 2))
+                    Label19.Text = Str(Math.Round(PI(1, 8), 2))
+                    Label49.Text = Str(Math.Round(PI(2, 8), 2))
                 Case 9
-                    Label10.Text = Str(PI(0, 9))
-                    Label20.Text = Str(PI(1, 9))
-                    Label50.Text = Str(PI(2, 9))
+                    Label10.Text = Str(Math.Round(PI(0, 9), 2))
+                    Label20.Text = Str(Math.Round(PI(1, 9), 2))
+                    Label50.Text = Str(Math.Round(PI(2, 9), 2))
             End Select
 
             If Block_No < 9 Then
