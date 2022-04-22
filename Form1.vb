@@ -1,7 +1,6 @@
-﻿'Option Strict On
 Imports System, System.Drawing.Drawing2D, System.Drawing.Text, System.IO, System.Math, System.Runtime.InteropServices, System.Management, System.Globalization
 
-
+Imports TimerValue
 
 Public Class Form1
     Inherits System.Windows.Forms.Form
@@ -48,7 +47,7 @@ Public Class Form1
     Const platform3_led2 = 5
 
     'definition of interval
-    Const timerInterval = 48
+    Const timerInterval = 47
 
     Dim tab_ As Char = Chr(9)
 
@@ -576,22 +575,25 @@ Public Class Form1
         Try
             diffTime = timerInterval - ((start.Now.Ticks - oldTime) \ 10000)
 
-            If (diffTime < 35) And (diffTimerWritten = False) Then
-                Timer1.Interval = diffTime
-                diffTimerWritten = True
-                Console.WriteLine("Timer under: " & Timer1.Interval)
+            If (diffTime < 1) And (diffTimerWritten = False) Then
+                Throw New TimerValue(Str(diffTime))
             Else
             End If
 
-            If (diffTime > 35) And (diffTimerWritten = True) Then
+            If (diffTime > 30) And (diffTimerWritten = True) Then
                 Timer1.Interval = timerInterval
                 diffTimerWritten = False
-                Console.WriteLine("Timer over: " & Timer1.Interval)
+            Else
             End If
 
-        Catch
+        Catch ex As TimerValue
             Timer1.Interval = 25
+            diffTimerWritten = True
+            Console.WriteLine("Timing: {0]", ex.Message)
+        Catch
+            Console.WriteLine("Something went wrong with the timer")
         End Try
+
     End Sub
 
     '{----------------------------------------------------}
@@ -696,7 +698,7 @@ Public Class Form1
         mA2 = U2 / 19.5 * 1000  ' I2 = U2/R2 [in mA];   R2 = 19.5 Ohm
         'TextBox1.Text = Int(mA1)
         'TextBox2.Text = Int(mA2)
- 
+
     End Sub
 
     '{----------------------------------------------------}
@@ -1886,7 +1888,7 @@ Public Class Form1
             Select Case OnOff
                 Case Laser1_ON
                     Button44.Image = My.Resources.LaserTest_on_S1
-                    ErrorCode = lj.LabJack.EDigitalOut(Lj_ID, LjDemo, IOchannel, useIO_ports, 1)
+                    errorCode = lj.LabJack.EDigitalOut(Lj_ID, LjDemo, IOchannel, useIO_ports, 1)
                 'lj.LabJack.EDigitalOut(-1, 0, 0, 5, 1)
                 Case Laser1_OFF
                     If status = "running" Then
@@ -1894,7 +1896,7 @@ Public Class Form1
                     Else   ' (status = "stopped"
                         Button44.Image = My.Resources.Laser_Warnschild_S
                     End If
-                    ErrorCode = lj.LabJack.EDigitalOut(Lj_ID, LjDemo, IOchannel, useIO_ports, 0)
+                    errorCode = lj.LabJack.EDigitalOut(Lj_ID, LjDemo, IOchannel, useIO_ports, 0)
                     'lj.LabJack.EDigitalOut(-1, 0, 0, 0, 0)
             End Select
 
@@ -1906,7 +1908,7 @@ Public Class Form1
         Catch ex As Exception
             emergyCloseTimer()
 
-            MessageBox.Show(ex.Message, "Labjack Errorcode: " & ErrorCode, MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show(ex.Message, "Labjack Errorcode: " & errorCode, MessageBoxButtons.OK, MessageBoxIcon.Error)
 
         End Try
 
@@ -1938,7 +1940,7 @@ Public Class Form1
 
             End Select
 
-            If (ErrorCode > 0) Then
+            If (errorCode > 0) Then
                 Throw New System.Exception("Labjack Errorcode: " & errorCode)
             Else
             End If
@@ -2209,11 +2211,12 @@ Public Class Form1
         End If
 
         For int_counter = 0 To int_counter_end 'changed form performed_NofData to NofData
-            DataFile.WriteLine(Str(int_counter) & tab_ & _
-                Str(pos_data(int_counter, 0)) & tab_ & _
-                Str(pos_data(int_counter, 1)) & tab_ & _
-                Str(pos_data(int_counter, 2)) & tab_ & _
+            DataFile.WriteLine(Str(int_counter) & tab_ &
+                Str(pos_data(int_counter, 0)) & tab_ &
+                Str(pos_data(int_counter, 1)) & tab_ &
+                Str(pos_data(int_counter, 2)) & tab_ &
                 Str(pos_data(int_counter, 3)))
         Next
     End Sub
 End Class
+
