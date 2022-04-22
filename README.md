@@ -22,4 +22,4 @@ Changlog 2.1.0.1
 - single definiton of the hysteresis block, >= was changed to >
 - the floating-point number is changed to two digits after the decimal point
 
-For further information follow the link https://youtu.be/f2WfK15S_uA
+For further information follow the link https://youtu.be/f2WfK15S_uA 
