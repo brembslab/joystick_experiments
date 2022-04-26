@@ -23,3 +23,7 @@ Changlog 2.1.0.1
 - the floating-point number is changed to two digits after the decimal point
 
 For further information follow the link https://youtu.be/f2WfK15S_uA 
+
+Changlog 2.1.0.2
+
+- changed Console.WriteLine from ] to } in Try-Catch-Block
