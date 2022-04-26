@@ -589,7 +589,7 @@ Public Class Form1
         Catch ex As TimerValue
             Timer1.Interval = 25
             diffTimerWritten = True
-            Console.WriteLine("Timing: {0]", ex.Message)
+            Console.WriteLine("Timing: {0}", ex.Message)
         Catch
             Console.WriteLine("Something went wrong with the timer")
         End Try
@@ -985,6 +985,13 @@ Public Class Form1
             tc3 = tc3 + 1
         Else
         End If
+
+        'platform1_led1_onoff = True
+        'platform1_led2_onoff = False
+        'platform2_led1_onoff = False
+        'platform2_led2_onoff = False
+        'platform3_led1_onoff = True
+        'platform3_led2_onoff = False
 
         'Switching the LEDs
         If (platform1_led1_onoff <> platform1_led1_onoff_old) Then
@@ -1971,6 +1978,7 @@ Public Class Form1
                         Button44.Image = My.Resources.greenLED
                         'errorCode = lj.LabJack.PulseOutStart(Lj_ID, LjDemo, 0, 1, 32767, 6, 1, 6, 1)
                         errorCode = lj.LabJack.EDigitalOut(Lj_ID, LjDemo, platform1_led1, useIO_ports, 1)
+                        Console.WriteLine(errorCode)
                     Else
 
                         Button44.Image = My.Resources.redLED
